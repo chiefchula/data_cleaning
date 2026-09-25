@@ -23,9 +23,10 @@ clean <- dirty |>
     TRUE ~ str_replace_all(str_extract(Email, "^[^@]+"), "\\.", " ")
   ))) |> 
   rename(email_old = Email) |> 
-  mutate(Email = case_when(
-    str_detect(email_old, "@") ~ str_extract(email_old, "^[^@]+")
-  )) |> 
+  mutate(Email = if_else(
+    str_detect(email_old, "@"),
+    paste0(str_to_lower(str_extract(email_old,"^[^@]+")), "@example.com"),
+    NA_character_)) |> 
   mutate(Email = paste0(str_to_lower(Email), "@example.com")) |> 
   rename(phone_old = Phone) |> 
   mutate(Phone = case_when(
