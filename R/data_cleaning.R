@@ -6,12 +6,13 @@ library(janitor)
 library(readxl)
 library(readr)
 library(tidylog)
+library(stringr)
 
 # import dataset ----------
-dirty <- read_excel("C:/Users/Chula/Downloads/Data Cleaning Dataset.xlsx", 
+dirty <- read_excel("data/Data Cleaning Dataset.xlsx", 
                     sheet = "Raw Orders")
 
-instruction <- read_excel("C:/Users/Chula/Downloads/Data Cleaning Dataset.xlsx", 
+instruction <- read_excel("data/Data Cleaning Dataset.xlsx", 
                           sheet = "README")
 
 clean <- dirty |> 
@@ -92,4 +93,4 @@ clean <- dirty |>
     TRUE ~ NA_character_
   ))
 
-clean |> select(order_date_old, d,m,y,`Order Date`) |> filter(d == 2024)
+writexl::write_xlsx(clean, "output/clean_dataset.xlsx")
