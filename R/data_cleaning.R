@@ -82,15 +82,35 @@ clean <- dirty |>
     str_detect(`Payment Method`, "Mobile|pesa") ~ "M-Pesa",
     TRUE ~ `Payment Method`)
   ) |> 
-  rename(order_date_old = `Order Date`) |>
-  separate(order_date_old, into = c("d", "m", "y"), remove = FALSE) |> 
-  mutate(`Order Date` = case_when(
-    d > 12 & m > 30 ~ str_c(y,m,d,sep = "-"),
-    d > 30 & m > 12 ~ str_c(y,d,m,sep = "-"),
-    d > 2000 & m > 12 ~ str_c(d,m,y,sep = "-"),
-    d > 2000 & m > 30 ~ str_c(d,y,m,sep = "-"),
+  # rename(order_date_old = `Order Date`) |>
+  # separate(order_date_old, into = c("d", "m", "y"), remove = FALSE) |> 
+  # mutate(`Order Date` = case_when(
+  #   d > 12 & m > 30 ~ str_c(y,m,d,sep = "-"),
+  #   d > 30 & m > 12 ~ str_c(y,d,m,sep = "-"),
+  #   d > 2000 & m > 12 ~ str_c(d,m,y,sep = "-"),
+  #   d > 2000 & m > 30 ~ str_c(d,y,m,sep = "-"),
+  # 
+  #   TRUE ~ NA_character_
+  # )) |> 
+  rename(status_old = Status) |> 
+  mutate(Status = case_when(
+    str_detect(status_old, regex("cancel", ignore_case = TRUE)) ~ "Cancelled",
+    str_detect(status_old, regex("complete", ignore_case = TRUE)) ~ "Completed",
+    str_detect(status_old, regex("return", ignore_case = TRUE)) ~ "Returned",
+    str_detect(status_old, regex("pending", ignore_case = TRUE)) ~ "Pending",
     
-    TRUE ~ NA_character_
-  ))
+    TRUE ~ status_old
+  )) |> 
+  mutate(Rating = as.numeric(case_when(
+    Rating == "N/A" ~ NA_character_,
+    Rating == 'five' ~ "5",
+    TRUE ~ Rating
+  ))) |> 
+  select(`Order ID`, Customer_Name, Email, Phone, City, Product, Category, Quantity, `Unit Price`, `Payment Method`, `Order Date`, Status, Rating)
+  
 
-writexl::write_xlsx(clean, "output/clean_dataset.xlsx")
+
+clean |> select(status_old, Status) |> distinct(status_old, .keep_all = TRUE)
+
+
+# writexl::write_xlsx(clean, "output/clean_dataset.xlsx")
